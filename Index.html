@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4e54c8;
+            --primary-light: #8f94fb;
+            --secondary: #ff7d29;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #ff8c42;
+            --light: #1f2937;
+            --dark: #f8f9fa;
+            --gray: #9ca3af;
+            --gray-light: #374151;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .app {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .app-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .app-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .app-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .balance-label {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .income-expense {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .income, .expenses {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .income-label, .expenses-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .income-amount {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--success);
+        }
+
+        .expenses-amount {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--danger);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--gray);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.2);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.2);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3f42a6;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .expenses-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-light);
+            transition: var(--transition);
+        }
+
+        .expense-item:hover {
+            background-color: var(--gray-light);
+        }
+
+        .expense-info {
+            flex: 1;
+        }
+
+        .expense-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .expense-details {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .expense-amount {
+            font-weight: 700;
+            color: var(--danger);
+        }
+
+        .expense-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .expense-actions button {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .expense-actions button:hover {
+            color: var(--primary);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .calculator-display {
+            background-color: var(--gray-light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-align: right;
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            min-height: 60px;
+        }
+
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .calculator-btn {
+            padding: 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: var(--gray-light);
+        }
+
+        .calculator-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .calculator-btn.operator {
+            background-color: var(--primary-light);
+            color: white;
+        }
+
+        .calculator-btn.equals {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .calculator-btn.clear {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .settings-section {
+            margin-bottom: 20px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .settings-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--gray-light);
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        .currency {
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app">
+            <div class="app-header">
+                <h1 class="app-title">Money Tracker</h1>
+                <div class="header-actions">
+                    <button class="icon-button" id="calculatorBtn">
+                        <i class="fas fa-calculator"></i>
+                    </button>
+                    <button class="icon-button" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="app-content">
+                <div class="left-panel">
+                    <div class="card balance-card">
+                        <div class="balance-label">Current Balance</div>
+                        <div class="balance-amount"><span class="currency">₹</span> <span id="balanceAmount">0.00</span></div>
+                        <div class="income-expense">
+                            <div class="income">
+                                <div class="income-label">Income</div>
+                                <div class="income-amount"><span class="currency">₹</span> <span id="incomeAmount">0.00</span></div>
+                            </div>
+                            <div class="expenses">
+                                <div class="expenses-label">Expenses</div>
+                                <div class="expenses-amount"><span class="currency">₹</span> <span id="expensesAmount">0.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-money-bill-wave"></i> Monthly Income</h2>
+                        <div class="form-group">
+                            <label class="form-label">Income Amount (₹)</label>
+                            <input type="text" class="form-input" id="incomeInput" placeholder="Enter monthly income">
+                        </div>
+                        <button class="btn btn-primary btn-block" id="saveIncomeBtn">Save Income</button>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-chart-pie"></i> Spending by Category</h2>
+                        <div class="chart-container">
+                            <canvas id="chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-panel">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Add New Expense</h2>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-input" id="expenseDescription" placeholder="Enter expense description">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (₹)</label>
+                            <input type="text" class="form-input" id="expenseAmount" placeholder="Enter amount">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-input" id="expenseDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="expenseCategory">
+                                <option value="">Select a category</option>
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Bills">Bills</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="newCategory" placeholder="Or create new category">
+                        </div>
+                        <button class="btn btn-primary btn-block" id="addExpenseBtn">Add Expense</button>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-list"></i> Recent Expenses</h2>
+                        <ul class="expenses-list" id="expensesList">
+                            <li class="empty-state">
+                                <i class="fas fa-receipt"></i>
+                                <p>No expenses added yet</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculator Modal -->
+    <div class="modal" id="calculatorModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeCalculator">&times;</button>
+            <h2 class="card-title"><i class="fas fa-calculator"></i> Calculator</h2>
+            <div class="calculator-display" id="calcDisplay">0</div>
+            <div class="calculator-buttons">
+                <button class="calculator-btn clear" data-value="clear">C</button>
+                <button class="calculator-btn operator" data-value="%">%</button>
+                <button class="calculator-btn operator" data-value="backspace">⌫</button>
+                <button class="calculator-btn operator" data-value="/">/</button>
+                
+                <button class="calculator-btn" data-value="7">7</button>
+                <button class="calculator-btn" data-value="8">8</button>
+                <button class="calculator-btn" data-value="9">9</button>
+                <button class="calculator-btn operator" data-value="*">×</button>
+                
+                <button class="calculator-btn" data-value="4">4</button>
+                <button class="calculator-btn" data-value="5">5</button>
+                <button class="calculator-btn" data-value="6">6</button>
+                <button class="calculator-btn operator" data-value="-">-</button>
+                
+                <button class="calculator-btn" data-value="1">1</button>
+                <button class="calculator-btn" data-value="2">2</button>
+                <button class="calculator-btn" data-value="3">3</button>
+                <button class="calculator-btn operator" data-value="+">+</button>
+                
+                <button class="calculator-btn" data-value="0">0</button>
+                <button class="calculator-btn" data-value=".">.</button>
+                <button class="calculator-btn equals" data-value="=">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeSettings">&times;</button>
+            <h2 class="card-title"><i class="fas fa-cog"></i> Settings</h2>
+            
+            <div class="settings-section">
+                <div class="settings-label">
+                    <span class="settings-title">Dark Mode</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3 class="settings-title">Data Management</h3>
+                <button class="btn btn-primary btn-block" id="exportDataBtn">Export Data</button>
+                <button class="btn btn-danger btn-block" id="clearDataBtn" style="margin-top: 10px;">Clear All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const incomeInput = document.getElementById('incomeInput');
+            const saveIncomeBtn = document.getElementById('saveIncomeBtn');
+            const expenseDescription = document.getElementById('expenseDescription');
+            const expenseAmount = document.getElementById('expenseAmount');
+            const expenseDate = document.getElementById('expenseDate');
+            const expenseCategory = document.getElementById('expenseCategory');
+            const newCategory = document.getElementById('newCategory');
+            const addExpenseBtn = document.getElementById('addExpenseBtn');
+            const expensesList = document.getElementById('expensesList');
+            const balanceAmount = document.getElementById('balanceAmount');
+            const incomeAmount = document.getElementById('incomeAmount');
+            const expensesAmount = document.getElementById('expensesAmount');
+            const calculatorBtn = document.getElementById('calculatorBtn');
+            const calculatorModal = document.getElementById('calculatorModal');
+            const closeCalculator = document.getElementById('closeCalculator');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsModal = document.getElementById('settingsModal');
+            const closeSettings = document.getElementById('closeSettings');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            
+            // Set default date to today
+            expenseDate.valueAsDate = new Date();
+            
+            // Initialize Chart.js
+            const ctx = document.getElementById('chart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#4e54c8', '#8f94fb', '#ff7d29', '#28a745', '#dc3545', '#ffc107', '#17a2b8'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Data structure
+            let appData = {
+                income: 0,
+                expenses: [],
+                categories: ['Food', 'Transport', 'Shopping', 'Entertainment', 'Bills', 'Other'],
+                darkMode: false
+            };
+            
+            // Load data from localStorage
+            function loadData() {
+                const savedData = localStorage.getItem('moneyTrackerData');
+                if (savedData) {
+                    appData = JSON.parse(savedData);
+                    updateUI();
+                }
+                
+                // Load dark mode preference
+                if (localStorage.getItem('darkMode') === 'true') {
+                    document.body.classList.add('dark-mode');
+                    darkModeToggle.checked = true;
+                    appData.darkMode = true;
+                }
+            }
+            
+            // Save data to localStorage
+            function saveData() {
+                localStorage.setItem('moneyTrackerData', JSON.stringify(appData));
+                localStorage.setItem('darkMode', appData.darkMode);
+            }
+            
+            // Update UI with current data
+            function updateUI() {
+                // Update income
+                incomeInput.value = appData.income;
+                incomeAmount.textContent = formatCurrency(appData.income);
+                
+                // Calculate total expenses
+                const totalExpenses = appData.expenses.reduce((total, expense) => total + parseFloat(expense.amount), 0);
+                expensesAmount.textContent = formatCurrency(totalExpenses);
+                
+                // Update balance
+                const balance = appData.income - totalExpenses;
+                balanceAmount.textContent = formatCurrency(balance);
+                
+                // Update expenses list
+                renderExpenses();
+                
+                // Update chart
+                updateChart();
+                
+                // Update category dropdown
+                updateCategoryDropdown();
+            }
+            
+            // Format currency (Indian Rupees)
+            function formatCurrency(amount) {
+                return parseFloat(amount).toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            
+            // Render expenses list
+            function renderExpenses() {
+                if (appData.expenses.length === 0) {
+                    expensesList.innerHTML = `
+                        <li class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <p>No expenses added yet</p>
+                        </li>
+                    `;
+                    return;
+                }
+                
+                expensesList.innerHTML = '';
+                
+                // Sort expenses by date (newest first)
+                const sortedExpenses = [...appData.expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                sortedExpenses.forEach((expense, index) => {
+                    const date = new Date(expense.date).toLocaleDateString('en-IN');
+                    const li = document.createElement('li');
+                    li.className = 'expense-item';
+                    li.innerHTML = `
+                        <div class="expense-info">
+                            <div class="expense-title">${expense.description}</div>
+                            <div class="expense-details">
+                                <span>${date}</span>
+                                <span>${expense.category}</span>
+                            </div>
+                        </div>
+                        <div class="expense-amount">₹${formatCurrency(expense.amount)}</div>
+                        <div class="expense-actions">
+                            <button class="delete-expense" data-id="${index}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    expensesList.appendChild(li);
+                });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-expense').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        deleteExpense(id);
+                    });
+                });
+            }
+            
+            // Update category dropdown
+            function updateCategoryDropdown() {
+                // Clear existing options except the first one
+                while (expenseCategory.options.length > 1) {
+                    expenseCategory.remove(1);
+                }
+                
+                // Add categories from appData
+                appData.categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    expenseCategory.appendChild(option);
+                });
+            }
+            
+            // Update chart
+            function updateChart() {
+                const categoryTotals = {};
+                
+                // Calculate totals for each category
+                appData.expenses.forEach(expense => {
+                    if (categoryTotals[expense.category]) {
+                        categoryTotals[expense.category] += parseFloat(expense.amount);
+                    } else {
+                        categoryTotals[expense.category] = parseFloat(expense.amount);
+                    }
+                });
+                
+                // Update chart data
+                chart.data.labels = Object.keys(categoryTotals);
+                chart.data.datasets[0].data = Object.values(categoryTotals);
+                chart.update();
+            }
+            
+            // Add new expense
+            function addExpense() {
+                const description = expenseDescription.value.trim();
+                const amount = expenseAmount.value.trim();
+                const date = expenseDate.value;
+                let category = expenseCategory.value;
+                const newCat = newCategory.value.trim();
+                
+                // Validate inputs
+                if (!description) {
+                    alert('Please enter a description for the expense.');
+                    return;
+                }
+                
+                if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                    alert('Please enter a valid amount for the expense.');
+                    return;
+                }
+                
+                if (!date) {
+                    alert('Please select a date for the expense.');
+                    return;
+                }
+                
+                if (newCat) {
+                    category = newCat;
+                    // Add new category if it doesn't exist
+                    if (!appData.categories.includes(newCat)) {
+                        appData.categories.push(newCat);
+                    }
+                }
+                
+                if (!category) {
+                    alert('Please select or create a category for the expense.');
+                    return;
+                }
+                
+                // Add expense to data
+                appData.expenses.push({
+                    description,
+                    amount: parseFloat(amount).toFixed(2),
+                    date,
+                    category
+                });
+                
+                // Save data and update UI
+                saveData();
+                updateUI();
+                
+                // Clear form
+                expenseDescription.value = '';
+                expenseAmount.value = '';
+                expenseDate.valueAsDate = new Date();
+                expenseCategory.value = '';
+                newCategory.value = '';
+            }
+            
+            // Delete expense
+            function deleteExpense(id) {
+                appData.expenses.splice(id, 1);
+                saveData();
+                updateUI();
+            }
+            
+            // Set income
+            function setIncome() {
+                const income = incomeInput.value.trim();
+                
+                if (!income || isNaN(income) || parseFloat(income) < 0) {
+                    alert('Please enter a valid income amount.');
+                    return;
+                }
+                
+                appData.income = parseFloat(income).toFixed(2);
+                saveData();
+                updateUI();
+            }
+            
+            // Calculator functionality
+            let calculatorValue = '0';
+            let waitingForSecondOperand = false;
+            let operator = null;
+            let previousValue = 0;
+            
+            function updateCalculatorDisplay() {
+                document.getElementById('calcDisplay').textContent = calculatorValue;
+            }
+            
+            function inputDigit(digit) {
+                if (waitingForSecondOperand) {
+                    calculatorValue = digit;
+                    waitingForSecondOperand = false;
+                } else {
+                    calculatorValue = calculatorValue === '0' ? digit : calculatorValue + digit;
+                }
+            }
+            
+            function inputDecimal() {
+                if (waitingForSecondOperand) {
+                    calculatorValue = '0.';
+                    waitingForSecondOperand = false;
+                    return;
+                }
+                
+                if (!calculatorValue.includes('.')) {
+                    calculatorValue += '.';
+                }
+            }
+            
+            function handleOperator(nextOperator) {
+                const inputValue = parseFloat(calculatorValue);
+                
+                if (operator && waitingForSecondOperand) {
+                    operator = nextOperator;
+                    return;
+                }
+                
+                if (previousValue === 0) {
+                    previousValue = inputValue;
+                } else if (operator) {
+                    const result = performCalculation();
+                    calculatorValue = `${parseFloat(result.toFixed(7))}`;
+                    previousValue = result;
+                }
+                
+                waitingForSecondOperand = true;
+                operator = nextOperator;
+            }
+            
+            function performCalculation() {
+                const inputValue = parseFloat(calculatorValue);
+                
+                if (operator === '+') {
+                    return previousValue + inputValue;
+                } else if (operator === '-') {
+                    return previousValue - inputValue;
+                } else if (operator === '*') {
+                    return previousValue * inputValue;
+                } else if (operator === '/') {
+                    return previousValue / inputValue;
+                } else if (operator === '%') {
+                    return previousValue % inputValue;
+                }
+                
+                return inputValue;
+            }
+            
+            function calculatorReset() {
+                calculatorValue = '0';
+                waitingForSecondOperand = false;
+                operator = null;
+                previousValue = 0;
+            }
+            
+            function backspace() {
+                if (calculatorValue.length > 1) {
+                    calculatorValue = calculatorValue.slice(0, -1);
+                } else {
+                    calculatorValue = '0';
+                }
+            }
+            
+            // Event Listeners
+            saveIncomeBtn.addEventListener('click', setIncome);
+            addExpenseBtn.addEventListener('click', addExpense);
+            
+            calculatorBtn.addEventListener('click', function() {
+                calculatorModal.style.display = 'flex';
+            });
+            
+            closeCalculator.addEventListener('click', function() {
+                calculatorModal.style.display = 'none';
+            });
+            
+            settingsBtn.addEventListener('click', function() {
+                settingsModal.style.display = 'flex';
+            });
+            
+            closeSettings.addEventListener('click', function() {
+                settingsModal.style.display = 'none';
+            });
+            
+            darkModeToggle.addEventListener('change', function() {
+                document.body.classList.toggle('dark-mode');
+                appData.darkMode = this.checked;
+                saveData();
+            });
+            
+            clearDataBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                    appData.income = 0;
+                    appData.expenses = [];
+                    saveData();
+                    updateUI();
+                }
+            });
+            
+            exportDataBtn.addEventListener('click', function() {
+                const dataStr = JSON.stringify(appData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = 'money-tracker-data.json';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            });
+            
+            // Calculator event listeners
+            document.querySelectorAll('.calculator-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    
+                    if (value === 'clear') {
+                        calculatorReset();
+                    } else if (value === 'backspace') {
+                        backspace();
+                    } else if (value === '.') {
+                        inputDecimal();
+                    } else if (value === '=') {
+                        if (operator) {
+                            const result = performCalculation();
+                            calculatorValue = `${parseFloat(result.toFixed(7))}`;
+                            previousValue = 0;
+                            operator = null;
+                            waitingForSecondOperand = false;
+                        }
+                    } else if (['+', '-', '*', '/', '%'].includes(value)) {
+                        handleOperator(value);
+                    } else {
+                        inputDigit(value);
+                    }
+                    
+                    updateCalculatorDisplay();
+                });
+            });
+            
+            // Input validation for numeric fields
+            incomeInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            });
+            
+            expenseAmount.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === calculatorModal) {
+                    calculatorModal.style.display = 'none';
+                }
+                if (event.target === settingsModal) {
+                    settingsModal.style.display = 'none';
+                }
+            });
+            
+            // Initialize the app
+            loadData();
+        });
+    </script>
+</body>
+</html>
