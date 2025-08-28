@@ -538,6 +538,20 @@
             font-family: inherit;
         }
 
+        .offline-indicator {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--danger);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+            z-index: 1001;
+        }
+
         /* Prevent zoom on input focus on iOS */
         @media screen and (max-width: 768px) {
             input, select, textarea {
@@ -713,6 +727,8 @@
         </div>
     </div>
 
+    <div class="offline-indicator" id="offlineIndicator">Offline Mode</div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // DOM Elements
@@ -739,6 +755,7 @@
             const exportDataBtn = document.getElementById('exportDataBtn');
             const tabs = document.querySelectorAll('.tab');
             const tabPanes = document.querySelectorAll('.tab-pane');
+            const offlineIndicator = document.getElementById('offlineIndicator');
             
             // Set default date to today
             expenseDate.valueAsDate = new Date();
@@ -774,6 +791,21 @@
                 categories: ['Food', 'Transport', 'Shopping', 'Entertainment', 'Bills', 'Other'],
                 darkMode: false
             };
+            
+            // Check if offline
+            function checkOnlineStatus() {
+                if (!navigator.onLine) {
+                    offlineIndicator.style.display = 'block';
+                }
+                
+                window.addEventListener('online', function() {
+                    offlineIndicator.style.display = 'none';
+                });
+                
+                window.addEventListener('offline', function() {
+                    offlineIndicator.style.display = 'block';
+                });
+            }
             
             // Load data from localStorage
             function loadData() {
@@ -1198,6 +1230,18 @@
             
             // Initialize the app
             loadData();
+            checkOnlineStatus();
+            
+            // Register Service Worker for offline functionality
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('sw.js').then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
         });
     </script>
 </body>
